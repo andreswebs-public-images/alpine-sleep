@@ -24,6 +24,7 @@ jobs:
     docker:
       - image: circleci/buildpack-deps:focal  
     steps:
+      - setup_remote_docker
       - aws-ecr/ecr-login
       - aws-ecr/push-image:
           repo: "${IMAGE_NAME}"
