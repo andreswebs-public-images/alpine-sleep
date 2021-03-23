@@ -4,7 +4,7 @@ orbs:
   aws-ecr: circleci/aws-ecr@6.15.3
 
 jobs:
-  build-image:
+  build-and-push-to-ecr:
     docker:
       - image: circleci/buildpack-deps:focal
     steps:
@@ -23,3 +23,9 @@ jobs:
       - aws-ecr/push-image:
             repo: "${IMAGE_NAME}"
             tag: "latest,${CIRCLE_SHA1}"
+
+workflows:
+  version: 2
+  build-and-push-image:
+    jobs:
+      - build-and-push-to-ecr
