@@ -26,9 +26,12 @@ jobs:
     steps:
       - setup_remote_docker
       - aws-ecr/ecr-login
+      - run: |
+        echo "${AWS_ECR_ACCOUNT_URL}"
+        echo "${IMAGE_NAME}"
       - aws-ecr/push-image:
           repo: "${IMAGE_NAME}"
-          tag: "latest,${CIRCLE_SHA1}"
+          tag: "latest"
 
 workflows:
   version: 2
