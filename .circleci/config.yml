@@ -22,6 +22,9 @@ commands:
         description: A comma-separated string containing docker image tags (default = latest)
         type: string
         default: latest
+      image:
+        description: The image to be tagged
+        type: string
     steps:
       - run: 
           command: |
