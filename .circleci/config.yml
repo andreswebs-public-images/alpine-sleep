@@ -28,7 +28,7 @@ jobs:
       - aws-ecr/ecr-login
       - aws-ecr/push-image:
           repo: "${IMAGE_NAME}"
-          tag: latest,"${CIRCLE_SHA1}"
+          tag: "latest,${CIRCLE_SHA1}"
 
 workflows:
   version: 2
