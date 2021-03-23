@@ -30,7 +30,7 @@ jobs:
           tags: latest,"${CIRCLE_SHA1}"
 
 workflows:
- version: 2
+  version: 2
   build-and-push-image:
     jobs:
       - build-image
