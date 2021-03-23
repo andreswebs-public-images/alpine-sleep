@@ -1,0 +1,36 @@
+version: 2.1
+
+orbs:
+  aws-ecr: circleci/aws-ecr@6.15.3
+
+jobs:
+  build-image:
+    docker:
+      - image: circleci/buildpack-deps:focal
+    steps:
+      - checkout
+      - setup_remote_docker
+      - run:
+          name: Build image
+          command: |
+            docker build --tag "${IMAGE_NAME}:${CIRCLE_SHA1}"
+      - run:
+          name: Tag image
+          command: |
+            docker tag "${IMAGE_NAME}:${CIRCLE_SHA1}" "${AWS_ECR_ACCOUNT_URL}/${IMAGE_NAME}:${CIRCLE_SHA1}"
+            docker tag "${IMAGE_NAME}:${CIRCLE_SHA1}" "${AWS_ECR_ACCOUNT_URL}/${IMAGE_NAME}:latest"
+
+  push-image:
+    steps:
+      - aws-ecr/ecr-login
+      - aws-ecr/push-image:
+          repo: "${IMAGE_NAME}"
+          tags: latest,"${CIRCLE_SHA1}"
+
+workflows:
+  build-and-push-image:
+    jobs:
+      - build-image
+      - push-image
+          requires:
+            - build-image
