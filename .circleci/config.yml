@@ -16,10 +16,7 @@ jobs:
             docker build --tag "${IMAGE_NAME}:${CIRCLE_SHA1}" .
       - run:
           name: Tag image
-          command: |
-            docker tag "${IMAGE_NAME}:${CIRCLE_SHA1}" "${AWS_ECR_ACCOUNT_URL}/${IMAGE_NAME}:${CIRCLE_SHA1}"
-            docker tag "${IMAGE_NAME}:${CIRCLE_SHA1}" "${AWS_ECR_ACCOUNT_URL}/${IMAGE_NAME}:latest"
-
+ 
   push-image:
     docker:
       - image: circleci/buildpack-deps:focal  
@@ -28,12 +25,11 @@ jobs:
       - aws-ecr/ecr-login
       - run: 
           command: |
-            echo "${AWS_ECR_ACCOUNT_URL}"
-            echo "${IMAGE_NAME}"
-            echo "${CIRCLE_SHA1}"
+            docker tag "${IMAGE_NAME}:${CIRCLE_SHA1}" "${AWS_ECR_ACCOUNT_URL}/${IMAGE_NAME}:${CIRCLE_SHA1}"
+            docker tag "${IMAGE_NAME}:${CIRCLE_SHA1}" "${AWS_ECR_ACCOUNT_URL}/${IMAGE_NAME}:latest"
       - aws-ecr/push-image:
-          repo: "${IMAGE_NAME}"
-          tag: "latest"
+            repo: "${IMAGE_NAME}"
+            tag: "latest,${CIRCLE_SHA1}"
 
 workflows:
   version: 2
