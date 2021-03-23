@@ -31,6 +31,6 @@ workflows:
   build-and-push-image:
     jobs:
       - build-image
-      - push-image
+      - push-image:
           requires:
             - build-image
