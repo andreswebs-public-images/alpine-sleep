@@ -3,6 +3,34 @@ version: 2.1
 orbs:
   aws-ecr: circleci/aws-ecr@6.15.3
 
+commands:
+  aws-tag:
+    description: >
+      Tag an image for AWS ECR. Requires environment variable for AWS_ECR_ACCOUNT_URL
+    parameters:
+      account-url:
+        description: >
+          Env var storing Amazon ECR account URL that maps to an AWS account, e.g.
+          {AWSAccountNumber}.dkr.ecr.us-east-1.amazonaws.com, defaults to
+          AWS_ECR_ACCOUNT_URL      
+        type: env_var_name
+        default: AWS_ECR_ACCOUNT_URL
+      repo:
+        description: Name of an Amazon ECR repository      
+        type: string
+      tag:
+        description: A comma-separated string containing docker image tags (default = latest)
+        type: string
+        default: latest
+    steps:
+      - run: 
+          command: |
+            IFS="," read -ra DOCKER_TAGS \<<< "<< parameters.tag >>"
+            AWS_IMAGE=$<<parameters.account-url>>/<<parameters.repo>>
+            for t in "${DOCKER_TAGS[@]}"; do
+              docker tag <<parameters.image>> "$AWS_IMAGE:$t"
+            done      
+
 jobs:
   build-and-push-to-ecr:
     docker:
@@ -14,15 +42,19 @@ jobs:
           name: Build image
           command: |
             docker build --tag "${IMAGE_NAME}:${CIRCLE_SHA1}" .
-      - run:
-          name: Tag image
-          command: |
-            docker tag "${IMAGE_NAME}:${CIRCLE_SHA1}" "${AWS_ECR_ACCOUNT_URL}/${IMAGE_NAME}:${CIRCLE_SHA1}"
-            docker tag "${IMAGE_NAME}:${CIRCLE_SHA1}" "${AWS_ECR_ACCOUNT_URL}/${IMAGE_NAME}:latest"
+      # - run:
+      #     name: Tag image
+      #     command: |
+      #       docker tag "${IMAGE_NAME}:${CIRCLE_SHA1}" "${AWS_ECR_ACCOUNT_URL}/${IMAGE_NAME}:${CIRCLE_SHA1}"
+      #       docker tag "${IMAGE_NAME}:${CIRCLE_SHA1}" "${AWS_ECR_ACCOUNT_URL}/${IMAGE_NAME}:latest"
+      - aws-tag:
+          image: $IMAGE_NAME:$CIRCLE_SHA1
+          repo: $IMAGE_NAME
+          tag: latest,$CIRCLE_SHA1      
       - aws-ecr/ecr-login
       - aws-ecr/push-image:
-            repo: "${IMAGE_NAME}"
-            tag: "latest,${CIRCLE_SHA1}"
+          repo: "${IMAGE_NAME}"
+          tag: "latest,${CIRCLE_SHA1}"
 
 workflows:
   version: 2
