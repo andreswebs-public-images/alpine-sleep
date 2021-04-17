@@ -1,0 +1,15 @@
+on: [push, delete]
+
+jobs:
+  to_codecommit:
+    runs-on: ubuntu-20.04
+    steps:
+    - uses: actions/checkout@v1
+    - uses: pixta-dev/repository-mirroring-action@v1
+      with:
+        target_repo_url:
+          ssh://git-codecommit.us-east-1.amazonaws.com/v1/repos/alpine-sleep
+        ssh_private_key:
+          ${{ secrets.AWS_CODECOMMIT_SSH_PRIVATE_KEY }}
+        ssh_username:
+          ${{ secrets.AWS_CODECOMMIT_SSH_PUBLIC_KEY_ID }}
